@@ -1,0 +1,1479 @@
+
+Algorithm for ARC Challenge:
+
+Consider same color hv-shapes, hv-shapes, same color hvd-shapes, hvd-shapes against background - get 4 sets, get rid of duplicates hv or hvd
+
+Consider pixels, hv-groups (lines, rects (holes, dents), other). Consider verticals, horizontals, diagonals. Consider distinct areas and cells in grids (irregular also).
+
+Grouping creates properties - number of objects, grouping factor, etc.
+
+
+***
+Concepts are based on defining features based on comparable properties - find them and use.
+
+Angle:
+acute - greater than 0° and less than 90°
+right - has a measure of 90 degrees
+obtuse - greater than 90 degrees and less than 180 degrees.
+
+Triangle:
+acute - contains three acute angles
+right - A triangle having one right angle
+obtuse - A triangle having one obtuse angle
+
+axis of symmetry - A line that divides a plane figure into two congruent reflected halves; Any
+line through a figure such that a point on one side of the line is the same distance to the axis as
+its corresponding point on the other side
+
+center of a rotation - A fixed point in the plane about which all points are rotated
+
+clockwise - The direction in which the hands of a clock move around the dial. Used to indicate
+the orientation of a transformation
+counterclockwise - The direction opposite the way in which the hands of a clock move around
+the dial. Used to indicate the orientation of a rotation
+
+collinear points - Points that lie on the same line
+non-collinear points Three or more points that do not lie on the same line
+
+concave polygon - A polygon that has at least one diagonal outside the polygon
+convex polygon - A polygon is convex if a line segment connecting any two points of the
+polygon lies entirely in the polygon’s interior
+
+concentric circles - Two or more circles having the same center and different radii
+
+concurrence - The concept of three or more lines intersecting in a single (common) point; having
+a single point of intersection
+
+corresponding parts - In two geometric figures, the points, sides, and/or angles which are in the
+same relative position when the figures are placed in a one-to-one correspondence
+
+distance between two points: The length of the line segment joining the two points; a unique
+non-negative real number
+distance between a point and a line: The length of the perpendicular segment from the point
+to the line
+distance between two parallel lines: The length of a line segment drawn from any point on
+one line perpendicular to the second line
+
+endpoint A point at either the end of a line segment, or arc, or the initial point of a ray
+
+equidistant At the same distance
+
+exterior of a geometric figure The set of all points outside a geometric figure
+interior The set of all points inside a geometric figure.
+
+geometric sequence (A2T) A set of terms in which each term is formed by multiplying the
+preceding term by a nonzero constant
+
+hypotenuse The side of a right triangle opposite the right angle
+
+intersecting lines Lines that share a common point
+
+length of line segment The distance between the end two end points of a line segment
+
+line segment Given any two points A and B , AB is equal to the union of points A , B , and all
+of those points between A and B
+
+line symmetry A geometric figure has line symmetry if the figure is the image of itself under a
+reflection in a line
+
+locus of points The set of all points satisfying a given condition or conditions
+
+midpoint A point that divides a line segment into two congruent line segments
+
+abscissa The horizontal or x-coordinate of a two-dimensional coordinate system
+ordinate The vertical coordinate of a two-dimensional rectangular coordinate system; usually
+denoted by y
+
+origin The point in the Cartesian coordinate plane at which the horizontal and vertical axes
+intersect, designated by the ordered pair (0,0)
+
+parallel lines Two or more coplanar lines that do not intersect. Parallel line segments or rays
+are line segments or rays that are subsets of parallel lines
+
+parallelogram A quadrilateral in which both pairs of opposite sides are parallel
+
+perimeter The sum of the lengths of all the sides of any polygon
+
+perpendicular lines Two lines that intersect to form right angles
+
+point An undefined term in geometry usually visualized as a dot representing a nondimensional
+location in space
+
+point of concurrency A point that is the intersection of three or more lines
+
+point symmetry A geometric figure has point symmetry if every point on the figure is the
+image of itself under a rotation of 180° about some fixed point
+
+polygon A closed plane figure formed by three or more line segments that meet only at their
+endpoints
+
+quadrant The four regions of a plane created by the intersection of the coordinate axes. Each
+of these quadrants has a number designation (I - x>0, y>0; II - x<0, y>0; III - x<0, y<0; IV - x>0, y<0)
+
+rotational symmetry A geometric figure has rotational symmetry if the figure is the image of
+itself under a rotation about a point through any angle whose measure is not a multiple of 360°
+
+slope The measure of the steepness of a line; the ratio of vertical change to horizontal change
+
+square A rectangle with two congruent adjacent sides
+
+supplementary angles Two angles the sum of whose measures is 180 degrees
+Complementary angles – two angles whose sum is 90 degrees
+
+trapezoid A quadrilateral with exactly one pair of parallel sides
+
+vertex of an angle The point of intersection of the two rays that form the sides of the angle.
+vertex of a polygon A point where the edges of a polygon intersect
+
+edge of a polyhedron A line segment that connects two consecutive vertices of a polyhedron
+
+Congruent segments – segments that have the same length
+
+Regular polygon – polygon which is equilateral and equiangular
+
+Parallelogram – quadrilateral with both pairs of opposite sides parallel
+
+Rectangle – parallelogram with a right angle
+
+A bounding box or minimum bounding box (MBB) is a rectangle, containing the object
+
+Points on different sides of a line (lines) - areas
+
+***
+
+Pixel {color, coordinates, neighbors}
+Line {pixels, color, start, finish, gaps, angle(aim/projection), intersections (priorities), neighbors/passing-through, blockers(change color/stop)}
+Rectangle {overlay, holes (fill in with several pieces), dents, what to do with occlusion - ignore/reconstruct/recognize}
+Contour {outside, inside, corners (convex/concave), }
+Shape {hvd multi-color set of same color hv-shapes - transformations will show what grouping makes sense, bounding rect, stats, each line may be moved, rectangle sections} - compare regions if bounding rects and color stats (at least in bg vs nbg, sorted numbers should match - mapping) coincide, separate case - puzzle contains pieces or color pattern if it is fully contained in cell pixels
+Cell {nbg pixels, stats} - rectangles with noise may also count as cells even if not organized in grid
+Grid {cells and their metacoordinates, stats}
+Sequence {start, direction, step, stopping condition}
+Pattern {pattern/params/recognition-features}
+
+Occluded part of shape may or may not be considered "removed"
+Parts of shape may be by absolute coordinates or by some indication
+
+Hole should fit the whole shape, dent should fit only part of shape (4 parts with possible symmetry).
+
+Analyze properties (like "angle convexity") and ranges - refer to groups by range labels. There may be many properties but we should not check all of them. Only if makes sense. Check from examples if symmetry/rotation/scale allowed/blocked. Prepare recognition methods - breakdown_shapes, symmetry, rotation, compare, 
+
+Observed changes in one example may be explained by different transformations. Prepare a set of hypotheses. Each of them has 1 vote from that example. Add votes from other examples where that hypothesis is justified. We are after hypotheses that are justified in all examples. If there are no such hypotheses, go with ones with most votes.
+
+Prepare transforms - prepare_output (blank array of required dimensions), copy_subarray, color, move, scale, rotate, mirror, replicate, restore_pattern, continue_sequence, ... Track changes introduced by transforms.
+
+Develop how to represent mapping, conditions, continuation, fill-in, etc. Develop methods to use those representations.
+
+Logical operations may proceed if pieces fit, otherwise leave one piece only.
+Approach generalization of shapes via minmodel
+Concave fill + mirror + remove original
+Most frequent shape in unseen of four rotations
+Pay attention to "closer to" - line, edge, shape, etc.
+Not "diagonal neighbors" but "top left neighbor", individually - easier to fit coordinates
+
+To make the solver meaningful, it should demonstrate its ability to narrow down to right transforms and parameters, even if it has no clue about the last pieces of the puzzle.
+
+The resulting Solver object will refer to objects in those sets - "the unique color shape", "number of green shapes", "from yellow pixel to the opposite edge", "top left corner of the grid", etc.
+
+What if multiple factors are detected? So, first check for all of them, next check what transformations are applicable, next determine their sequence.
+
+
+
+Grid
+First create empty grid, then populate cells
+First rotate/mirror input, then populate cells
+First tile cells, then color neighbors of relevant pixels
+First copy shape to cells, then color shapes/added pixels
+First populate cells, then remove delimiter
+First remove irrelevant noise, then make minmodel
+Continue sequence
+First empty area is added, then some pixels are colored
+First create lines, then copy them
+Replication
+First copy objects, then color them
+First replicate/move, then remove marker
+Move
+First rotate/mirror/scale object, then move it to indicated position
+First move puzzle pieces together, then crop
+First remove irrelevant pieces, then move relevant ones
+First move shape, then draw enclosing line
+Restore pattern
+First restore missing piece, then color it
+First find symmetrical piece, then mirror it
+Coloring
+First linethrough, then color edges
+First remove irrelevant pieces, then color relevant ones
+First reverse color sequence, then color neighbors
+First color, then move/crop/replicate
+First scale, then color neighbors
+First extend input, then color edge pixels
+First draw line, then color added pixels
+First noise-color shape, then remove noise
+First color neighbors, then remove host
+First color neighbors, then connect the dots
+First draw line, then evade blockers
+Mapping
+First figure out key(s) in order, then represent corresponding value
+Crop
+First crop, then scale/minmodel
+
+
+
+Input < output:
+
+Possible transforms:
+grid (cells of input dimensions, grid dimensions and cell content to be decided)
+mirror (number of times and axes TBD)
+fixed or calculated output dimensions
+rotations (angle and direction TBD)
+scale up (ratio TBD)
+extend outwards
+mapping
+
+Is input cell shape (generalized to non-background color or of each color) or its cell present in output:
+- no
+    possible transforms - grid, mapping, fixed or calculated output dimensions
+    Are output dimensions divisible by input dimensions
+    - yes (grid with input cell mapped to something else)
+    - no (mapping, fixed or calculated output dimensions)
+        Variability of input and output
+- once or more, including mirrored or rotated or inverted
+    possible transforms - grid, fixed or calculated output dimensions, extend outwards, mirror, rotation, grid mask
+    check grid mask - colors and shape in grid
+    If mirror or rotation (also of mirrored version) is present in addition to original - check for mirror or rotation
+    If original is in "cells" and repeated - check for grid
+    If original is in one corner or center - check for "continue pattern" or extend
+- scaled up (possibly mirrored or rotated)
+    possible transforms - scale up
+
+Continuation check:
+grid - how original cell affects grid (present in - non-background cells or vice versa, one color (fixed or majority) cells, fill rule, tile; mapping to coordinates) additional painting required?
+scale - ratio? additional painting required?
+continue pattern - position of added area, where pattern starts, repeating part, index in that part
+mapping (sort) - output dimension, fill rule, sort rule
+mapping (shapes) - position, orientation
+extension - edge coloring rules
+
+
+Input = output:
+
+Possible transforms:
+coloring (shape expand, inverting 2-colors, reversing sequence, line through, line zigzag, breakdown, mask, fill - spiral, snake, concentric, water, etc.)
+replicate
+sequence continue/restore (king to queen as boy to ?)
+one cell expand at large
+mapping (grid fill)
+pattern restore - mirror, tile, radial
+(rotate/mirror/move/remove)
+
+
+How original shapes are present in output:
+- absent - check for mapping or remove, cell expand
+    grid in input and output - cell expand
+    everything else is the same - remove
+    otherwise - mapping
+- shapes (or pieces of background) change color - coloring, pattern restore, sequence continue
+    output (or shape in it) is symmetric, tiled, radial, input has unique color patches (the only difference from output) - pattern restore
+    repetitive pattern in input, background area in input or added area in output (where coloring occurs) - sequence continue
+    otherwise - coloring (it has variants)
+- shapes in new positions - move, puzzle, corner pattern
+    rectangle formed - puzzle
+    central symmetry is formed - corner pattern
+    otherwise - move (it has variants)
+- shapes (as non-background) present and copied - replicate, sequence continue
+    input has repetitive pattern - sequence continue
+    otherwise - replicate (it has variants)
+- shapes possibly present and mirrored, rotated, scaled - check for respective transform
+
+
+Input > output:
+
+Possible transformations:
+logical operations
+stacking
+crop
+minmodel
+fixed or calculated output (fill in order)
+mapping
+scale down
+missing piece
+grid (fill in order)
+
+Is output cell/shape(s) (generalized to non-background color) present in input:
+- no - check for logical operations, stacking, mapping, minmodel, fill in order
+    is input dimension twice output plus possibly one line? only one non-background color in output? input cells have one non-background color each, delimiter is of different color?
+    yes - logical operations (possibly on background color or with mirrored other half)
+    output is square with one non-background color same as input?
+    yes - logical operations of corners 2x2 or 3x3
+    two to four cells (2x2 grid) of different non-background color each with possible delimiter, cells non-background colors are present in output of cell size?
+    yes - stacking
+    output is line of non-repeating colors (may be rect with same color verticals), grid or concentric with non-background colors from input (ignore delimiters)?
+    yes - minmodel
+    output has one non-background color and represents some numeric parameter from input?
+    yes - fixed or calculated output (fill in order)
+    otherwise consider mapping of anything to anything (variability)
+    
+- once or more (generalized to non-background color or of each color), including mirrored or rotated or inverted - check for missing piece, crop
+    mirrored or rotated, input has one color (used once) rect of same dimensions - missing piece of mirrored or tiled or rotated pattern
+    otherwise consider crop
+    
+- scaled up - check for scale down
+
+After crop:
+puzzle/ move pieces to anchor point
+corner pattern
+grid (rotated, mirrored)
+coloring
+scale
+mirror/rotate
+replicate
+
+
+For each transformation, we need to figure out parameters and where to take them:
+
+Defining properties of transformations: 
+- grid (cells of input dimensions, grid dimensions and cell content to be decided, fill in rules, one cell expand at large)
+ Parameters:
+ w and h parameters of new grid
+ delimiter
+ dependency of large grid cells on the small grid cells
+ cells stats, coordinates, dimensions - major contributors
+ Changes: dimensions increase n times (may be different for x and y) plus delimiter
+
+- input may be cell in output grid
+    check for coordinates of input found in output (correct for delimiter)
+    
+- one cell in input grid may determine content of output grid
+    if same dimensions and colors in output correspond to colors of one input cell
+    
+- output may be cell of input grid
+    delimiter is different, cells are different - observe line stats
+    
+- we may form grid by tiling, mirroring, rotating
+    input may be present in output in many positions and mirrored/rotated/enhanced
+    
+- (irregular) grid may be minmodeled
+    observe line stats - streaks of same color, differences
+    
+- we may refer to grid cells for coloring - top left, center, etc.
+    given delimiters, we may figure out grid dimensions and coordinates of special cells (mid left or center)
+    
+- grid coordinates may depend on cell coordinates, stats
+    some cells contain two non-background pixels, others - one
+    input may be in output cells corresponding to one color of input
+    
+- output grid dimensions may depend on numeric parameters of input cell and outside constant to be figured out
+    number of background or non-background cells times constant
+
+- mask may define color of shape in respective cells
+    one cell many colors mask, other cell one color shape, mask dimensions = output grid dimensions
+
+***
+
+- crop: output is smaller than input, output is fully contained in input (or may be result of other transforms of input), in-place crop - everything outside turns background (any border shape allowed)
+ Parameters:
+ what remains or what is removed should have some unique statistic across all the examples
+ or it may be inside some uniquely identified perimeter (solid or dashed enclosure, corners, side projections)
+ bounding rect
+ Changes: dimensions shrink
+
+Crop is often preceded by:
+puzzle/ move pieces to anchor point
+corner pattern
+grid (rotated, mirrored)
+coloring
+scale
+mirror/rotate
+replicate
+
+- grid cell
+    check if input is grid and output is one of cells (stats?)
+
+- puzzle after moving pieces together
+    check if output has all shapes from input (puzzle, anchor point?)
+
+- marked area
+    check for rectangle among noise, unique color, corners, outside markers
+
+- shape
+    for shapes in input collect stats - unique parameter?
+
+- section of symmetric shape
+    restore pattern or "top left" quarter
+
+- fixed coordinates area
+    top left corner?
+
+- in-place crop - remove everything but the shape, no dimensions shrink
+    all shapes gone but relevant one
+
+***
+
+- adding dimensions: delimiters, edge, cells
+ Parameters:
+ what is added - dimensions (h and/or v)
+ where added - position of input
+ Changes: dimensions increase
+
+Check if:
+- input and output dimensions are always the same
+- one or both dimensions increase for fixed amount of pixels
+- one or both dimensions increase in the same proportion
+- increase depends on input dimensions or content (numerical parameter like number of non-background pixels, shapes, colors, etc.)
+- 2 pixels added - edge? is input in the center?
+-- Figure out where input is located in output (direction(s) of increase)
+
+
+***
+
+- scale: output is smaller or bigger than input, each cell of smaller (sub)array corresponds to NxK cells of bigger (sub)array, stretch is scale in one dimension
+ Parameters: 
+ what is scaled - the whole input (its version after transform), shape
+ what ratio - it may be suggested by numerical properties - dimensions, number of colors/shapes, number of pixels, etc.
+ uniform - same ratio for x and y or two different ones
+ Changes: dimensions, shape scale parameter
+
+- not everything in output may be scaled if other transforms are applied afterwards
+    check if input scaled is present, everything else is added by a different transform
+
+- scaled fetus cells imply scaling the replicated shape
+    usually, a shape of many colors, some of them (fetus cells) is present elsewhere - rotated or mirrored, but in same relative positions
+
+- ratio may be fixed or depend on a numeric parameter or determined by bounding rect
+    track numeric parameters, check ratio across all examples
+
+- use scale factor 1, but be ready if input and output use different factors bigger than 1
+- some params need to be figured out based on transition from input to output
+- noise may interfere with identifying scaled shape - does it play any role or is it just obstacle? can it be ignored in favor of majority color? majority neighbor color (multiple runs)?
+
+***
+
+- move: input is the same as output, at least one shape changes position and is distinct from background (puzzle/ move pieces to anchor point/corner pattern/compactify)
+ Parameters: 
+ what is moved - shape by color, rarity, coordinate, "all but ...", puzzle pieces, 
+ where is it moved - fixed, dependent, to shape/edge, to align, to same color line, to fetus cells, to join by anchor cell, to rectangle in center, to fill holes, to marked area, as bridge suggests, to sort pieces, delimiter
+ circular array idea - ?
+ for what distance is it moved - fixed, dependent, to shape/edge, to align, to fetus cells, to join by anchor cell, by given sequence step, 
+ Changes: shape position (shape is distinct from background)
+
+check set of input shapes - which changed location?
+if same shapes appeared but in different color and position - coloring before move? same for rotation, mirror, scale
+
+***
+
+- coloring: input is the same as output, at least one shape changes color (without blending with background) (inverting 2-colors, reversing sequence, line through, line zigzag, breakdown, mask, shape expand, spiral/snake/con-centric pattern)
+ Parameters: 
+ what is colored (may be several shapes) - hv or hvd connected groups, background or blank area according to pattern (solid color, tile, mirror, sequence, spiral, snake, concentric, etc.), connect same color pixels (or corners of big cells), sorted groups, relative cells, (imaginary) linethrough (cell or rect center) (through different backgrounds) and intersections, directed rays (curving around blockers), breakdown groups, nearest cells, concave shapes, mask at fetus cells, grid (top left) cells, meeting lines of different colors and meeting point, max possible lines in irregular area, projections to shape, hv-zigzags, pieces falling on marker rect, making holes or fills (vanishing edges), cropped shape to marker color, vacant rects among noise, gaps in lines, inside + gap + rays, completing example shape at fetus points, ray + reflection, crop marker to shape color, rect by corner cells, complete rect, min max cells in irregular grid, quarters by mask, (water) fill, reverse color sequence, inscribed rect, squeezed line samples, straightened shapes in order or by stats, moved shape, remnants of old background after crop, one of many colors, shapes with holes, irregular half of shape, each odd column from the end, bridges, rects to color of projecting arkers, 
+ which color - fixed, dependent, mapping
+ Changes: color(s)
+
+- learn to attach to "symbolic" pixels like "top left corner" or middle pixel and express coordinates of pixels to paint in relation to those plus use repeats and simple conditions when needed
+- use objects from input and ignore changes of position, scale, mirror, rotation - multiple transforms
+- mapping of colors for sequence continue or neighbor coloring
+
+***
+
+- removal: input is the same as output, at least one shape changes color blending into background
+ Parameters: 
+ what is removed - shapes, noise - quantifiers "everything except", "all with this property", etc.
+ Changes: shape is replaced with its background color
+
+- non-fitting colors, non-unique colors, groups by number of pixels (one/many, by number), noise, non-rects of same color, non-extremes in sorting, markers for replication or coloring or move, non-central vertical (generalize)
+- make sure the shape did not change position, rotation, scale, mirror
+
+
+***
+
+- rotate: NxK may turn into KxN (90 or 270) or NxK (180), respective rotation of (sub)array is observed
+ Parameters: 
+ what is rotated
+ what angle
+ Changes: shape rotation parameter
+
+Check if 
+- fetus cells in different rotations are present in the shape
+- the whole output is rotated input
+- replication is combined with rotation (conditional?)
+- grid in output is of rotated input (cropped output is from input grid of rotated cells)
+- rotation may be combined with mirror (check rotations of mirrored versions)
+- coloring may apply to rotated "signal"
+- rotation may be required before move (to fit in hole)
+
+***
+
+- mirror: (in-place) shape is reflected using some axis into free space without changing dimensions, (generative) shape is reflected using some axis adding to dimensions, initial shape may be mirrored in different directions, the result may be mirrored again, symmetry is observed
+ Parameters: 
+ what is mirrored - the whole or shape
+ what axis - row/column or between, diagonal
+ keep original?
+ Changes: mirror parameter (in input it is false)
+
+- check if mirrored version fits fetus cells, fetus cells may indicate axis, output may be grid of mirrored input (direction and order ? ), in-place mirror (may be to the other side of input), to restore pattern, one color shapes are mirrored using other color shapes as axes, conditional mirror - if needed, diagonal
+
+***
+
+- replicate: similar to "move" but initial shape stays and many copies are possible, fetus/anchor points, grid with delimiters, sequence
+ Parameters: 
+ what is copied - shape(s)
+ where/how to copy - sequence (start, direction(s), step, stop condition, edge partiality), fetus cells, grid, fixed, dependent
+ anchor point ?
+ Changes: existing shapes appear elsewhere
+
+- replicate input in output grid cells - where input cells were non-background or vice versa
+- replicate shape using fetus cells (anchor points), use distance to replicate further
+- having different shapes (lines), repeat them in sequence in direction suggested
+- given sequence in some colors and beginning in other colors, map colors (by aligned coordinates) and continue sequence
+- params may be figured from output (directions, distance)
+- replicate corners, take edge pattern from output
+- position marker may be a generalizable shape
+- mask may hint grid and colors of replicated shapes
+- source colors may be organized horizontally, but repeated vertically
+- concentric pattern (and others) may start from different corners and occupy equal parts
+- we may replicate in 2d, along diagonal
+- we may replicate coloring transform
+
+***
+
+- replace: at least one shape vanishes and a different one appears, what with what? signal to symbol: variability of input/output
+ Parameters: 
+ what is replaced - shape1
+ with what - shape2
+ mapping ? (by sorting, by enumeration, by dependence)
+ Changes: one shape vanishes, another appears
+
+- we need a way to represent mappings, including bidirectional, color to color, shape to number, one representation to another, conditions to true/false, orientation to position, one color pixel to different color cell, spread majority color, use mapped colors for coloring, rearrange shapes into sorted lines by number of pixels, pixel positions to colors, edge coordinates difference to number, coordinates define order of filling grid, green pixel changes to pink if hv-connected to yellow, 
+- one-color line is recolored, multiple-color lines get background color
+- number represented as filled grid (fill rule - number grid cells)
+- parameter and number of states
+
+***
+
+- logical operations: input is bigger, what sections to overlay (recognize and ignore delimiter), color or background?
+ Parameters: 
+ what shapes are overlapped (delimiter)
+ background color or not
+ what operation
+ two cells colors and output color are all unique but the same
+ single color input - operation applies to corners of output size
+ Changes: one cell remains, its stats change
+
+***
+
+- stack: input is bigger, occlusion, what color is on top in all examples, what color is only occluded by the top color
+ Parameters: 
+ what shapes are stacked (delimiter)
+ what order
+ Changes: one cell remains, its stats change, remnants of input cells/shapes are there
+
+Input is a grid - 1d or 2d, with or without delimiter (distinct), non-background content of one cell is there, others are there partially (may be absent in some examples)
+
+***
+
+- min model: replace many with one (extreme generalization), the same set of colors
+ Parameters: 
+ output format - may be extended or one line
+ Changes: same color cells collapse in one
+
+- (irregular) grid, single color groups sorted by edge coordinates, ignore (background) noise, only minimize fitting grid cells, not only one dimension, stacked rects, colors of delimiter intersections
+
+***
+
+- pattern restore: copy tile or mirror or radial section where pattern is not missing - recognize tiled or symmetric picture in output or recognize monocolor rectangle of the output size in input
+ Parameters: 
+ tile or mirror
+ where to find missing pixels
+ missing piece
+ Changes: broken pattern is fixed
+
+- mirrored, tiled, repeated - find where to copy from and how to post-process
+- missing piece - same idea
+
+
+
+
+
+
+
+
+
+
+ARC AGI v2
+
+General ideas:
+
+Property, abs-value, rel-value
+Transform parameter - shape(s), color(s), distance, direction, angle, size - rel-value for selection
+Hypotheses (two best even if not perfect, priorities)
+Meaningful answers - perform this transform with these parameters
+If we exhausted all transformations depends on whether we cover all the pixels
+
+analyzing functions - collect objects and properties
+functions to check if any transformation is there - subtype (defining features), parameters
+functions to apply any transformation
+
+
+
+Algorithm
+
+1. Analyze examples
+    a. Analyze size - three options
+    b. Analyze non-bg pixels and same color hv-shapes, learn to find shapes in output that overlap/touch/move over edge/painted in different colors/rotated/mirrored/scaled/
+    	Many options - 
+    		all shapes are there (moved, painted, rotated, mirrored, scaled) - overlapping is possible
+    		some shapes are missing - remove/crop, replicating to anchor points, any operation when parameter defining shape is removed, 
+    		some input shapes are partial in output - moved (over edge?), remove/crop (by alignment), overlapping, decomposition, 
+    		new shapes appear - sequence, replicate, pattern restore, water fill, paint neighbors, draw primitives
+    		no input shapes - with or without repetitions in output, mapping, generalization, compose/fill output, decomposition, logical ops, stacking, minmodel
+    c. Analyze groupings - rel-values
+    	number of each color pixels and shapes
+    	number of shapes of each kind (generalized - if some shapes are grouped for no other reason)
+    	sort shapes by size, coordinate, number of holes (maybe even track shape of holes)
+    	special attention to unique items or extreme groups where number of affected matches
+    d. Analyze number of examples and variability of content
+    	repetitions in output are telling
+    	if same shape appears in input in variety of orientations, locations, colors, shapes it may be a param
+2. Prepare hypotheses based on the first pair
+    a. compare input and output - is it mapping or reshuffling
+    b. based on comparison results determine what transformations to track
+    c. for each transformation determine hypotheses for parameters - subtype, shape, color, etc.
+    d. each transformation hypothesis should have coherent parameters
+    e. track if mapping, sequence, or dependency are used (numeric param, repetition, variety)
+    f. rules - move to blocker, etc.
+3. Narrow down hypotheses
+    a. from each pair add possible new hypotheses or increment counter of those that hold
+    b. determine two best hypotheses
+    c. use scores or priorities having many "equal" candidates
+4. Prepare master-transformation
+    a. semantically - what transformations to apply to what shapes or colors
+    b. Expecto class - compute only required parameters to prepare answers
+    c. make sure to know how output size is determined and how each pixel is filled
+
+
+
+
+
+1. Overlapping is about z-coordinate.
+Signs - Overlapping bounding rectangles, moved shapes (relative positions to each other), partial visibility, non-bg color after move
+Parameters - shapes, z-coordinate of each shape, xy-positioning relative to lower shape
+
+2. Decomposition is about moving lines (or even pixels) of the object.
+Signs - lines are comparable, lines are moved according to some pattern
+Properties - shapes, pattern for moving lines
+
+3. Move is about changing position.
+Signs - absolute (vs grid) or relative (vs other shapes) position changed
+Properties - shapes, direction, distance
+
+4. Coloring is about changing color (digit).
+Signs - shape distinct from background changes color (also distinct from background)
+Properties - shapes, color
+
+5. Mirroring is about symmetry.
+Signs - shape is flipped compared to input, (part of) a pattern is symmetrical in output and needs to be restored from distorted input
+Properties - shapes (part of pattern), axis (h, v or d)
+
+6. Rotating is about angles.
+Signs - shape is rotated
+Properties - shapes, angle
+
+7. Scaling is about scaling an object or the whole input.
+Signs - shape is scaled
+Properties - shapes, scale factor
+
+8. Inversion is about two colors substituting each other.
+Signs - coloring task, two colors substitute each other
+Properties - shapes
+
+9. Removal is about blending an object into the background.
+Signs - shape changes color to background
+Properties - shapes
+
+10. Replicating is about creating copies.
+Signs - one or more copies of shape are added (may be rotated or flipped or scaled)
+Properties - shapes, position of copy
+
+11. Pattern continuation is about figuring out and continuing some sequence.
+Signs - repeating pattern in input is continued in output
+Properties - shapes, pattern, index
+
+12. Pattern restoration is about finding a missing piece in some pattern.
+Signs - missing piece restores patter (symmetry or sequence)
+Properties - shapes, continue pattern in the missing area
+
+13. Replacing is about replacing one thing with a different one (color for color or shape for symmetry axis - it can be anything).
+Signs - there is a map or a rule for replacing something for something else
+Properties - shapes, map or rule, possible values
+
+14. Crop is about removing space.
+Signs - input is cropped to shape or some region
+Properties - shapes or region, crop coordinates
+
+15. Adding dimensions is about adding space.
+Signs - output is bigger, the difference depends on some rule
+Properties - rule for adding space, size defining factor
+
+16. Logical operations are about pixel-wise logical operations.
+Signs - two two-color cells in input, one two-color cell in output, pixel-wise logical correspondence
+Properties - logical operation, on which color, color in output
+
+17. Stacking is about z-coordinate.
+Signs - two or more (up to 4) two-color cells in input, one cell in output with all colors from input possible, all pixels from one cell are present
+Properties - determine z-order of stacking cells
+
+18. Minmodel is about extreme generalization.
+Signs - replace multiple repetitions of color with one pixel
+Properties - perform minimization
+
+19. Draw a primitive is about adding a regular shape against background.
+Signs - coloring task but shape is drawn against background
+Properties - primitives, defining parameters
+
+20. Color neighbor background pixels
+Signs - coloring task but for neighbor background pixels
+Properties - which pixels, which color
+
+21. Construct output and fill it with shapes or pixels
+Signs - input shapes or pixels fill output
+Properties - which pixels or shapes, in what order
+
+22. Water flow fill or move
+Signs - fill or move follows blockers
+Properties - move or fill, what viewed as blocker
+
+23. Eraser
+Signs - parts of shape are there, some part is removed
+Properties - what defines the removed part (external marker?)
+
+24. Hole filling
+Signs - shapes with holes, shapes with hole-shapes, in output holes are painted
+Properties - 1 to 1 or many to 1
+
+25. Place/fill
+Signs - shapes are placed in certain area, in certain order
+Properties - output dimensions, placement order
+
+***
+
+Need to recognize:
+
+smaller
+- one or two color shapes (holes, coordinates; corresponding placeholders to fill, hole shapes and scale; number of same shapes, separate and touching, repainted, tetris contact with rotations)
+- contours
+- holes in roughly the same relative positions of different shapes
+- frames among noise or other patterns (sometimes dendrites are noise) - as shapes with holes, continuation (missing parts)
+- non-connected clusters as one shape
+- outliers as counters
+- pattern and indicators or area where it is continued
+- mapping (shape to shape)
+- traversal order
+- placement order/rules
+- non-centered symmetrical shape
+- arrow-shape (movement by anchors with rotation)
+- grid (rarest shape)
+- mask, rotation/placement indicator
+- rule movement with trail
+- paint indicator
+- alignment indicator for rotate/mirror
+
+uncertain
+- partial overlap
+- number of pixels
+- grid fill indicators
+- anchor pixels and docking rules
+
+bigger
+- input as rotated piece of bigger output
+
+same
+- check if non-bg elements are there (by pixel changes)
+- bg painted - neighbors, primitives, pattern, replicate
+- non-bg painted - paint, overlap, move, move by parts, move with push, 
+- shapes are there (moved, rotated, mirrored, scaled, distorted - by anchor points)
+- more shapes - replicate
+- fewer shapes - remove
+- 
+
+
+***
+
+Properties may be defined by unique extreme:
+
+Shapes:
+- color (fixed, rarest or most frequent, mapping, number of colors)
+- size (fixed, width, height, number of pixels)
+- location (x or y coordinate)
+- (generalized) shape
+- being symmetric
+
+Direction:
+- fixed, to some shape, mapping, 
+
+Distance:
+- fixed, to shape, to edge, by width or height, to align, 
+
+Color:
+- fixed, color of some shape, mapping, 
+
+Angle:
+- fixed, mapping, 
+
+Axis:
+- fixed, mapping, 
+
+Scale factor:
+- fixed, by some numeric parameter, mapping, 
+
+
+***
+
+Some properties may contain:
+- mapping
+- cycle/pattern
+- function
+
+
+***
+
+By eval task:
+
+The same sizes:
+
+ev2-1ae2feb7
+- size is the same, all non-bg pieces from input are in output, 'lines' in input color and y-coordinate aligned with new pixels in output
+- Tr: overlapping, sequence, recognize line as pixel sequence with 0 step
+
+ev2-2b83f449
+- size is the same, number of green pixels is the same, tree-pixels lines rotate and change color, overlapping (under moved green and rotated lines), recognize green groups as pixels moved together
+- Tr: rotate, paint, move (along trajectory, if can move down - condition!!!)
+
+ev2-2c181942
+- size is the same, if match circle section color shapes are rotated (direction from center of the docking shape) and moved to touch that circle section (recognize section and shape separately), if no match shape is removed (mapping for action based on color match)
+- Tr: rotate and move
+
+ev2-3dc255db
+- size is the same, big shapes are present in output, noise aligned with them is absent, line from that number of pixels of noise color protrudes (as edges allow), recognize arrow-like shape and its tip
+- Tr: remove noise, draw line
+
+ev2-3e6067c3
+- size is the same, all shapes from input are there, lines of different colors connect squares, recognize hint pixels
+- Tr: draw line (apply provided hint, take source color and width)
+
+ev2-4a21e3da
+- size is the same, lines drawn from edge pixels, cut-off pieces are moved to corners (recognize a piece part)
+- Tr: draw line, crop piece, move
+
+ev2-4c3d4a41
+- size is the same, gray frame is there, gray shape is there but moved, upper "teeth" get modified (moved up)
+- Tr: move shape, move teeth accordingly
+
+ev2-4c416de3
+- size is the same, all shapes are there, anchor pixels are upgraded
+- Tr: replicate at anchor pixels (respect orientation of corner)
+
+ev2-6e4f6532
+- size is the same, shapes are there (over anchor pixels)
+- Tr: rotate or mirror, move to anchor pixels (recognize them in input and output as parts of shape)
+
+ev2-6e453dd6
+- size is the same, shapes are there (some moved), additional lines are drawn
+- Tr: move shapes to touch, draw line (project holes in touching section - recognize that!)
+
+ev2-7b80bb43
+- size is the same, h and v lines are there, diagonal lines are gone, if they touched h or v line with a gap, the gap is closed
+- Tr: remove d lines, draw line (to close a gate - recognize line segments and gaps separately, if d line touches h or v line close to gap it's a signal to close it)
+
+ev2-7b0280bc
+- size is the same, shapes are there, some are painted
+- Tr: paint squares green, lines gray (it's a route between two rare color squares with minimum number of other squares)
+
+ev2-7c66cb00
+- size is the same, shapes are there, some are painted and moved
+- Tr: move each shape to the bottom of same color section, paint the color on the sides
+
+ev2-7ed72f31
+- size is the same, shapes are there, non-red ones are mirrored using center or axis symmetry
+- Tr: mirror
+
+ev2-8b7bacbf
+- size is the same, shapes are there, some holes are painted
+- Tr: paint (holes inside shapes connected to unique color pixel)
+
+ev2-8b9c3697
+- size is the same, shapes are there, some red ones are moved (aligned to central tooth)
+- Tr: move and paint the trail
+
+ev2-8e5c0c38
+- size is the same, output shapes are symmetrical and are in input
+- Tr: remove pixels violating central axis symmetry
+
+ev2-8f3a5a89
+- size is the same, from unique color pixel draw curve constrained by blue shapes
+- Tr: draw line
+
+ev2-8f215267
+- size is the same, some shapes are in output, some are removed, some appeared
+- Tr: add sequence (start from the right, number of shapes of rect color)
+
+ev2-9aaea919
+- size is the same, stack w/o underline are the same, red underline paints stack gray, green underline adds 1 to first stack, multiplies 2, 3 or 4 in other stacks
+- Tr: paint and continue sequence
+
+ev2-9bbf930d
+- size is the same, most shapes are there, pink pixels between same size lines moved along trajectory
+- Tr: move along trajectory
+
+ev2-13e47133
+- size is the same, lines are there, pixel colors define concentric frames, continue sequence
+- Tr: concentric frames, continue sequence
+
+ev2-16b78196
+- size is the same, shapes are there filling in the dents and each other
+- Tr: move to fill in dents
+
+ev2-16de56c4
+- size is the same, shapes are there, some are painted, sequence continued
+- Tr: continue sequence to edge if not fall on stopper (paint stopper color)
+
+ev2-28a6681f
+- size is the same, non-blue shapes are there, blue pixels moved
+- Tr: fill bg holes with blue pixels as if they are liquid (overflow)
+
+ev2-31f7f899
+- size is the same, colors and lengths are the same but ordered
+- Tr: sort and update lengths
+
+ev2-35ab12c3
+- size is the same, pixels are there but connected (if h, v or d), single touching pixels follow along
+- Tr: draw line, paint neighbors
+
+ev2-36a08778
+- size is the same, input lines and pixels are there, add flowing pixels
+- Tr: add flowing pixels
+
+ev2-53fb4810
+- size is the same, input shapes are there, continue sequence
+- Tr: continue sequence
+
+ev2-64efde09
+- size is the same, input shapes are there, draw lines from edge pixels to shapes and repeat the same for every other
+- Tr: draw line
+
+ev2-71e489b6
+- size is the same, black and blue areas are there, blue noise absent, black noise is surrounded
+- Tr: remove blue noise from black areas, surround black noise in blue areas with orange hv border
+
+ev2-80a900e0
+- size is the same, diagonals drawn from given pixels
+- Tr: draw line
+
+ev2-88bcf3b4
+- size is the same, straight lines are there, curved pixels reach to the other line and curve around it
+- Tr: place pixels along shortest path to the other line (stop before edge or don't overspend)
+
+ev2-88e364bc
+- size is the same, in the corner we are given direction, yellow pixels move in that direction to touch gray
+- Tr: move
+
+ev2-97d7923e
+- size is the same, shapes are there, some are painted
+- Tr: paint (sort by height, take highest or second highest depending on number of hint pixels)
+
+ev2-135a2760
+- size is the same, output has clean pattern, it's broken in input
+- Tr: move, remove, add pixels to restore pattern
+
+ev2-142ca369
+- size is the same, shapes are there, new lines appear
+- Tr: draw diagonal rays from "triangles", change their color upon touch, to the edge
+
+ev2-195c6913
+- size is the same, shapes are there, some removed, lines are drawn in pattern with turns and additions
+- Tr: overlapping, removal, draw lines with turns painted according to pattern, add pixel (blocker)
+
+ev2-221dfab4
+- size is the same, shapes are there, line below replicated, each third colored green and that row of shapes is painted green
+- Tr: replicate line, remove traversed parts of shapes (eraser transform), paint each third green, decomposition (paint rows)
+
+ev2-247ef758
+- size is the same, shapes are there, some removed, some replicated, some overlapped
+- Tr: if markers of shape color are present (recognize them) remove it and replicate at intersections, if no markers keep shape
+
+ev2-271d71e2
+- size is the same, shapes are there, some are moved, removed, painted
+- Tr: move to brown line not more than internal tank, paint as many pixels as h-movement
+
+ev2-332f06d7
+- size is the same, shapes are there, signs of overlap, black square moves along trajectory until width allows to overlap red
+- Tr: move along trajectory (respect width), overlap
+
+ev2-409aa875
+- size is the same, shapes are there, pixels appear, painting detected
+- Tr: place brown pixel in the direction of arrow after 4 pixels, if pointed by two - blue, if arrow is pointed by another paint brown
+
+ev2-446ef5d2
+- size is the same, shapes are there (recognize them as parts of whole), moved together (to marked piece), marker removed
+- Tr: move, removal
+
+ev2-581f7754
+- size is the same, shapes are there, some moved (recognize markers)
+- Tr: move to align with markers
+
+ev2-800d221b
+- size is the same, shapes are there, some parts painted
+- Tr: paint paths to central square in corner majority color, center in total majority color
+
+ev2-5961cc34
+- size is the same, shapes are "there and painted" or removed, additional lines appear (recognize markers)
+- Tr: draw line (respect width and direction hints), paint, remove
+
+ev2-7491f3cf
+- size is the same, shapes are there, some combination of last two shapes appears in the empty section
+- Tr: stacking, the first shape shows which half of second shape to overimpose over which half of the third
+
+ev2-7666fa5d
+- size is the same, painted area
+- Tr: paint area between lines
+
+ev2-9385bd28
+- size is the same, triangles indicate area to paint, map indicate colors (recognize it as such), overlap priorities from top to down in the map
+- Tr: paint areas with overlap, square is special case of overlapped triangles, not in map - ignore
+
+ev2-21897d95
+- size is the same, area shapes are there, tetris shapes are gone, areas painted, rotation
+- Tr: arrow of tetris shape touch area to paint and their area or internal pixel color is used, L-shape indicates rotation
+
+ev2-62593bfd
+- size is the same, shapes are there, moved to edges (multiple of same shape up and unique shape down)
+- Tr: move
+
+ev2-981571dc
+- size is the same, output is symmetrical picture moved from center, input has bg areas distorting symmetry
+- Tr: restore symmetry (find areas to mirror)
+
+ev2-1818057f
+- size is the same, in output yellow pixels painted blue
+- Tr: paint all yellow pixels forming a cross
+
+ev2-a47bf94d
+- size is the same, some shapes are there, some are transformed, on the side with squares should be crosses (figure out colors), on the other side should be dice fives, lines connect same color shapes
+- Tr: replace, trace lines
+
+ev2-a395ee82
+- size is the same, shape is replicated according to hint (at its location), apply hint colors to paint, remove hint
+- Tr: replicate, paint, remove
+
+ev2-a25697e4
+- size is the same, rotate two shapes together and fill the dent, if mirror is required invert colors
+- Tr: rotate, mirror, move, fill holes, invert colors
+
+ev2-aa4ec2a5
+- size is the same, add red edge to all shapes, paint with given colors the shapes with holes
+- Tr: paint, add neighbors
+
+ev2-abc82100
+- size is the same, hint removed, pixel changes color and serves as anchor point for shape
+- Tr: apply hint, paint, replace
+
+ev2-b5ca7ac4
+- size is the same, shapes are there, moved
+- Tr: move (blue edge squares to the left edge, red edge squares to the right edge, or to touch other square)
+
+ev2-b6f77b65
+- size is the same, movements detected
+- Tr: remove (all shapes of hint color), move (all sticking out pixels)
+
+ev2-b9e38dc0
+- size is the same, shapes are there, painting detected
+- Tr: paint fill directional (all inside, going outside respecting directions of outlets)
+
+ev2-b99e7126
+- size is the same, shapes are there, grid detected, some cells are different - have color not present in other cells
+- Tr: grid, replicate (those unique cells start forming the shape in each of them in unique color, replicate one of unique cells to complete that shape around them)
+
+ev2-b10624e5
+- size is the same, shapes are there, grid detected, multiple colors in one cell, same colors in all output cells, mirror detected
+- Tr: mirror, anchor pixels, scale
+
+ev2-c4d067a0
+- size is the same, replication and scale detected
+- Tr: replication (as in map), scale as anchor points, respect orientation
+
+ev2-c7f57c3e
+- size is the same, two masks (swapped in output), one of them replicated scaled (swapped in output), scale detected
+- Tr: swap (double replicate), scale
+
+ev2-cb2d8a2c
+- size is the same, from green pixel line is drawn turning around obstacle lines, which are painted red
+- Tr: draw line ???
+
+ev2-cbebaa4b
+- size is the same, all shapes are there, except some red dots, some moved
+- Tr: move to dock red dots
+
+ev2-d8e07eb2
+- size is the same, header and footer sometimes painted green (when green highlighting is one row or column), otherwise only footer is red, highlighted are shapes from header in middle area
+- Tr: paint (highlight)
+
+ev2-d35bdbdc
+- size is the same, remove and paint detected
+- Tr: keep two color squares hv touched by gray curve in middle, find squares with outer color same as center color and update, remove other two-color squares
+
+ev2-d59b0160
+- size is the same, some shapes are there, some removed
+- Tr: remove (shapes with pixels from hint)
+
+ev2-da515329
+- size is the same, original shape is there, spiral is drawn
+- Tr: draw primitive - spiral (ensure 1 pixel gap)
+
+ev2-db0c5428
+- size is the same, original shape is there, grid detected, each 3x3 cell is mirrored outward, inside added symmetrical pattern
+- Tr: grid, mirror, place (internal edge reverse mirror, center - majority color?)
+
+ev2-db695cfb
+- size is the same, pixels are there, new pixels added (d-lines)
+- Tr: draw lines if blue pixels on the same diagonal (hv?), if pass through pink pixel then draw d-line through pink pixel
+
+ev2-dbff022c
+- size is the same, shapes are there, paint detected
+- Tr: paint (holes according to map)
+
+ev2-dd6b8c4b
+- size is the same, shapes are there, some pixels (part of shapes) moved, move and overlap detected
+- Tr: if not blocked by walls move nearest up to 9 pixels to cover square (from left to right, from top to bottom)
+
+ev2-de809cff
+- size is the same, big areas are there, colored noise removed, black pixels inside painted blue and surrounded with color of the other rectangle color
+- Tr: remove colored noise, paint bg internal noise (blue with the other color edge)
+
+ev2-dfadab01
+- size is the same, different examples show rules for mapping colored pixels to other shapes
+- Tr: replace pixels with shapes
+
+ev2-e12f9a14
+- size is the same, shapes are there, lines of internal color drawn through their edge gaps, when lines meet they turn differently (2 d, h v, h or v and d)
+- Tr: draw lines, map turns
+
+ev2-e376de54
+- size is the same, lines of different length in input are aligned in output
+- Tr: draw/erase line (middle one, second longest ?)
+
+ev2-e3721c99
+- size is the same, shapes are there, paint detected
+- Tr: paint (map is by number of holes)
+
+ev2-faa9f03d
+- size is the same, overlap, lines fixed or reverted
+- Tr: restore lines, if turn is marked reverse, respect overlap
+
+
+
+Output is smaller:
+
+ev2-2ba387bc
+- output size is smaller and not the same but multiple of shape size, all shapes from input present in output (need to track objects when they touch, easy for different color objects)
+- Tr: squares with holes on the left (track objects with and without holes), solid on the right, from top to bottom in the order of square's top y-coordinate
+
+ev2-2d0172a1
+- output size is smaller, all lines are 1-pixel wide, shapes into 1 pixel
+- Tr: minmodel (rectangelize)
+
+ev2-3a25b0d8
+- output size is smaller, by bounding rect of one shape, shapes are different but have holes at roughly the same locations
+- Tr: paint by mask, extract shape (crop but only one shape)
+
+ev2-4c7dc4dd
+- output size is smaller, it's inside size of one rectangle (with bg color)
+- Tr: crop, apply transform (draw_line, invert_colors, etc.) suggested by example
+
+ev2-4e34c42c
+- output size is smaller, shapes are there but touching or colliding
+- Tr: move shapes to overlap anchor sections, crop result
+
+ev2-5dbc8537
+- output size is smaller, shapes are moved/inserted in same size placeholders
+- Tr: move, crop
+
+ev2-6ffbe589
+- output size is smaller, big shape cropped, its color parts rotated independently
+- Tr: rotate 90 degrees for each pixel of respective color in a hint, crop
+
+ev2-7b3084d4
+- output size is smaller, shapes are there (rotated/mirrored and moved to fill in each other), gray pixel is in top left (starting shape)
+- Tr: rotate/mirror, move, crop
+
+ev2-7b5033c1
+- output size is smaller, it's vertical, has all colored pixels, respects y coordinate
+- Tr: fill
+
+ev2-20a9e565
+- output size is smaller, indicated by gray corners, it has a part of sequence continuation
+- Tr: continue sequence (color and shape), crop to what falls between gray corners
+
+ev2-58f5dbd5
+- output size is smaller, it has big squares cropped (+1 pixel) with same color shapes cut out from each
+- Tr: cut out shape, crop
+
+ev2-67e490f4
+- output size is smaller, it has bigger shape filled in with smaller shapes of majority color each
+- Tr: fill in, crop
+
+ev2-136b0064
+- output size is smaller, one gray pixel is there, new shapes appear
+- Tr: recognize traversal order (top-down, left-right), mapping (shapes to h or v lines of certain length), crop, placing rules
+
+ev2-291dc1e1
+- output is smaller, size is decided in the end, shapes are there, moved and rotated, some removed
+- Tr: removed parts indicate start of traversal, order top-down and out, place order, rotate 90 counterclockwise
+
+ev2-898e7135
+- output is smaller, it is one shape cropped and scaled, noise removed, big shapes placed in respective holes
+- Tr: hole filling, scale crop
+
+ev2-0934a4d8
+- output is smaller, it is of size of same color rectangle (recognize it in the presence of possible noise), output restores symmetry
+- Tr: Restore symmetry (find symmetrical rectangle and mirror it, crop)
+
+ev2-5545f144
+- output is smaller, it is one part cropped, output has one shape, one-pixel noise ignored, looks like progression of states of arrow moving by waypoints and rotating in direction of next one if none is in the same direction
+- Tr: crop, rotate ?, move/place, remove noise
+
+ev2-38007db0
+- output is smaller, it has one column with the rarest shape in respective row
+- Tr: crop, replace
+
+ev2-58490d8a
+- output is smaller, it has pixels placed in certain order (as in map), number of pixels is determined by the number of shapes of that color, output size is determined by that, not in map - ignore
+- Tr: replicate pixels
+
+ev2-89565ca0
+- output is smaller, it has pixels by number of rectangles (recognize them with noise and overlap) of each color sorted, the rest is of noise color
+- Tr: compose, sort, place, paint
+
+ev2-8698868d
+- output is smaller, place each square with holes into square with the same number of noise pixels, remove noise, crop
+- Tr: remove, move, crop
+
+ev2-a6f40cea
+- output is smaller, it has continuation of shapes
+- Tr: restore rectangles (including line pattern), crop
+
+ev2-a32d8b75
+- output is smaller, map is cut off, top square shows colors but reverted, rotate second shape as shown in the bottom square and place it in the corner (or as shown) indicated by third square, put top square (not rotated) in each pixel of second shape
+- Tr: move, scale, invert colors, replicate, rotate, overlap
+
+ev2-a251c730
+- output is smaller, cropped rectangle with anchor pixels replaced with shapes from the other rectangle
+- Tr: replicate by anchor pixels, crop
+
+ev2-b0039139
+- output is smaller, replicate detected, paint detected
+- Tr: place provided shape in provided color provided number of time in provided orientation 1 pixel margin, bg in provided color
+
+ev2-e87109e9
+- output is smaller, areas are there, lines added from seed
+- Tr: draw lines with turns (clockwise/counterclockwise according to map)
+
+ev2-e8686506
+- output is smaller, shapes are there moved, crop detected
+- Tr: move shapes to fill holes and dents, crop
+
+ev2-edb79dae
+- output is smaller, two maps for shape and color, replace and paint and crop detected
+- Tr: replace, paint, crop
+
+ev2-f560132c
+- output is smaller, shapes are there moved and painted
+- Tr: paint by given map (map inside one shape), move to fit in rectangle, crop
+
+ev2-fc7cae8d
+- output is smaller, rotate/mirror and crop detected
+- Tr: rotate/mirror central shape to align its markers with colors of edges, crop without markers
+
+
+
+Output is bigger:
+
+ev2-45a5af55
+- output size is bigger, it has concentric frames of input colors
+- Tr: create concentric frames (careful about center)
+
+ev2-269e22fb
+- output is bigger, all outputs are the same picture (rotated/mirrored), inputs are its parts indicating rotation angle and colors
+- Tr: take basic picture, paint, rotate
+
+ev2-eee78d87
+- output is bigger, output 16x16, center 6x6 brown, overlap orange background with cut-out tiled shape from input
+- Tr: overlap, grid, dimension fix
+
+
+
+Output size is uncertain:
+
+ev2-65b59efc
+- output size is different, nxn of nxn (shape from upper row dimensions), output is constructed of shapes from upper "row" in patterns from middle row of colors from bottom row
+- Tr: place in grid, paint
+
+ev2-20270e3b
+- size is uncertain, movement by anchor points
+- Tr: adjacent yellow pixels move onto anchor points, crop
+
+ev2-78332cb0
+- size is uncertain, 2x2 grid turns into 1x4 (take call in given order - one example), h grid turns v and vice versa (clockwise rotate 90), shapes are there
+- Tr: rearrange grid (recognize grids)
+
+ev2-bf45cf4b
+- size unclear, replication and crop detected
+- Tr: replication (two-color shape into each pixel of one-color shape), crop
+
+ev2-f931b4a8
+- size is num of non-bg pixels in top-left 4x4 by num of non-bg pixels in top-right 4x4, bg is in bottom-left 4x4, pattern is in bottom-right 4x4, (possible scale and pattern issues ?)
+- Tr: dimension fix, bg paint, overlap pattern
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+By task:
+
+tr-0a1d4ef5
+- rectangles of same color, v and h coordinates, squeeze each to one pixel, ignore the rest, respect relative positions
+
+tr-0a938d79
+- draw lines across, repeat the pattern to the further end
+
+tr-0a2355a6
+- map color to number of holes
+
+tr-0b148d64
+- crop by bondaries the group of rare color
+
+tr-0b17323b
+- continue pattern in specified color
+
+tr-0bb8deee
+- crop 3x3 shapes and stick them together
+
+tr-0becf7df
+- color inversion according to specified map
+
+tr-0c9aba6e
+- logical AND of black pixels
+
+tr-0c786b71
+- symmetry up, symmetry left
+
+tr-0ca9ddb6
+- paint neighbors by map - diagonal pixels, hv pixels, none
+
+tr-0d3d703e
+- color mappings
+
+tr-00d62c1b
+- paint hv-enclosed black pixels (ignore edge connected)
+
+tr-0d87d2a6
+- connect dots on edges, paint crossed rectangles
+
+tr-00dbd492
+- paint internal black pixels, map color to width
+
+
+Novel ideas:
+
+tr-1a2e2828
+- take color of the top line
+
+tr-1a244afd
+- rotate pairs, change color
+
+tr-1acc24af
+- paint those that can fit any dent
+
+tr-1e5d6875
+- first add yellow triangle to gray, then add green triangle to red
+
+tr-1efba499
+- paired pixels move in touch with the shape and reverse colors, other pixels stay and do not change color
+
+tr-2a28add5
+- from violet pixels add number of colored pixels on each side, paint blue
+
+tr-2b9ef948
+- perform move as in pattern, then paint
+
+tr-2ccd9fef
+- continue progression
+
+tr-2de01db2
+- replace minority colors with majority, majority with background
+
+tr-2e65ae53
+- figure out color for each corner and fill in the gaps
+
+tr-3bd292e8
+- areas along the diagonal from lower left to upper right, paint gray-green-gray-green...
+
+tr-3cd86f4f
+- move rows, add background pixels
+
+tr-3d6c6e23
+- piramid below, respect color and number of provided pixels
+
+tr-3d588dc9
+- remove outlier, paint one column facing gray shape
+
+tr-4acc7107
+- left-most goes into lower left corner, same color one line above, leftmost goes lower one line right
+
+tr-5a719d11
+- if neighbor rects are same color, empty them, otherwise swap shapes painting them initial rect color
+
+tr-5ad8a7c0
+- connect nearest h-pairs
+
+tr-5d588b4d
+- ???
+
+tr-5ecac7f7
+- take 2 lines from left, mid line, 2 lines from right    - take lines (novel transformation)
+
+tr-6ca952ad
+- ???
+
+tr-6d1d5c90
+- remove left column, but use its unique pixel for "circular array move" (novel transformation)
+
+tr-8abad3cf
+- ???
+
+tr-8dab14c2
+- reproduce outlier or dent on the opposite side
+
+tr-8e301a54
+- move, parameters ???
+
+tr-8fff9e47
+- top left in center, squares (snake right down right ...) define quarter arcs
+
+tr-9f669b64
+- parameter ??? (2 guesses!)
+
+tr-30f42897
+- replicate along the edge
+
+tr-37ce87bb
+- ???
+
